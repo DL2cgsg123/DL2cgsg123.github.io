@@ -40,8 +40,8 @@ export class model {
     }
     
     loadGLTF(name, shdName) {
-      let jsondata = this.loadJSON("../../bin/models/" + name + "/" + name + ".gltf");
-      let bindata = this.loadBIN("../../bin/models/" + name + "/" + name + ".bin");
+      let jsondata = this.loadJSON("bin/models/" + name + "/" + name + ".gltf");
+      let bindata = this.loadBIN("bin/models/" + name + "/" + name + ".bin");
       let data;
       let bin;
 
