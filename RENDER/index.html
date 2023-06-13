@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF_8"/>
+    <title>Render</title>
+</head>
+
+<body onkeydown=>
+    <script type="module">
+        import {main} from './main.js'
+
+        window.addEventListener("load", () => {
+            main();
+        });
+    </script>
+    <div>
+        <canvas id="glCanvas" width="1200" height="1200"></canvas>
+    </div>
+</body>
+
+</html>
