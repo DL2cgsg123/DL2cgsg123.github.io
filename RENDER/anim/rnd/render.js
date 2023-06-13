@@ -53,7 +53,7 @@ export class render{
 
     moveCam(key)
     {
-        let dTime = 1;//!!!
+        let dTime = 0.6;
         let kd = 0, ka = 0, ke = 0, kq = 0, kw = 0, ks = 0;
         if (key == 68) // 'd' key code
           kd = 1;
@@ -85,19 +85,15 @@ export class render{
         const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
         if (window.rot && (window.mdx != 0 || window.mdy != 0))
         {
-          this.angleX = (((this.angleX - window.mdx * 0.0013) * 1000.0) % (Math.PI * 20.0)) / 1000.0;
-          //this.angleX = this.angleX - window.mdx;
+          this.angleX = this.angleX + window.mdx * 0.0013;
           const threshold = 0.0001;
           this.angleY = clamp(this.angleY - window.mdy * 0.0013, -Math.PI / 2.0 + threshold, Math.PI / 2.0 - threshold);
-          //this.angleY = this.angleY - window.mdy;
           WasChanged = true;
         }
         
         if (WasChanged) {
-          let newAt = this.cam.At.addVec(NewLoc).subVec(this.cam.Loc);
-          newAt = newAt.addVec(new vec3(Math.sin(this.angleX) * Math.cos(this.angleY), Math.sin(this.angleY), Math.cos(this.angleX) * Math.cos(this.angleY)));
+          let newAt = NewLoc.subVec((new vec3(Math.sin(this.angleX) * Math.cos(this.angleY), Math.sin(this.angleY), Math.cos(this.angleX) * Math.cos(this.angleY))).mulByNum(2.0));
           this.cam.SetLocAtUp(NewLoc, newAt, this.cam.Up);
-          //NewLoc.addVec(new vec3(Math.sin(this.angleX) * Math.cos(window.angleY), Math.sin(window.angleY), Math.cos(this.angleX) * Math.cos(window.angleY))), this.cam.Up);
         }
     }
 
