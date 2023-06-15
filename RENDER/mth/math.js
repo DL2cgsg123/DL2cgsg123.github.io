@@ -80,9 +80,14 @@ export class matr {
                 a20, a21, a22, a23,
                 a30, a31, a32, a33) {
         this.Data = [];
-        let i;
-        for (i = 0; i < 4; i++)
-            this.Data[i] = [];
+        /*
+        if (a00 == undefined) {
+            for (let i = 0; i < 16; i++)
+                this.Data[i] = 0;
+            return;
+        }
+        */
+                
         this.Data[0 * 4 + 0] = a00;
         this.Data[0 * 4 + 1] = a01;
         this.Data[0 * 4 + 2] = a02;
@@ -135,6 +140,107 @@ export class matr {
             for (r.Data[i * 4 + j] = 0, k = 0; k < 4; k++)
               r.Data[i * 4 + j] += this.Data[i * 4 + k] * M.Data[k * 4 + j];
         return r;
+    }
+
+    determ3x3(A11, A12, A13,
+              A21, A22, A23,
+              A31, A32, A33) {
+        return A11 * A22 * A33 + A12 * A23 * A31 + A13 * A21 * A32 -
+               A11 * A23 * A32 - A12 * A21 * A33 - A13 * A22 * A31;
+
+    }
+
+    determ() {
+        return +this.Data[0 * 4 + 0] * this.determ3x3(this.Data[1 * 4 + 1], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                                                         this.Data[2 * 4 + 1], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3],
+                                                         this.Data[3 * 4 + 1], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) +
+               -this.Data[0 * 4 + 1] * this.determ3x3(this.Data[1 * 4 + 0], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                                                      this.Data[2 * 4 + 0], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3],
+                                                      this.Data[3 * 4 + 0], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) +
+               +this.Data[0 * 4 + 2] * this.determ3x3(this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 3],
+                                                      this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 3],
+                                                      this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 3]) +
+               -this.Data[0 * 4 + 3] * this.determ3x3(this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 2],
+                                                      this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 2],
+                                                      this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 2]);
+    }
+
+    inverse() {
+        let det = this.determ();
+        let InvA = matr.identity();
+ 
+        if (det == 0)
+          return matr.identity();
+ 
+        /* build adjoint matrix */
+        InvA.Data[0 * 4 + 0] =
+          +this.determ3x3(this.Data[1 * 4 + 1], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                          this.Data[2 * 4 + 1], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3],
+                          this.Data[3 * 4 + 1], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[1 * 4 + 0] =
+          -this.determ3x3(this.Data[1 * 4 + 0], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[2 * 4 + 0] =
+          +this.determ3x3(this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 3],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 3],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[3 * 4 + 0] =
+          -this.determ3x3(this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 2],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 2],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 2]) / det;
+ 
+        InvA.Data[0 * 4 + 1] =
+          -this.determ3x3(this.Data[0 * 4 + 1], this.Data[0 * 4 + 2], this.Data[0 * 4 + 3],
+                          this.Data[2 * 4 + 1], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3],
+                          this.Data[3 * 4 + 1], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[1 * 4 + 1] =
+          +this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 2], this.Data[0 * 4 + 3],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[2 * 4 + 1] =
+          -this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 1], this.Data[0 * 4 + 3],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 3],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[3 * 4 + 1] =
+          +this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 1], this.Data[0 * 4 + 2],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 2],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 2]) / det;
+ 
+        InvA.Data[0 * 4 + 2] =
+          +this.determ3x3(this.Data[0 * 4 + 1], this.Data[0 * 4 + 2], this.Data[0 * 4 + 3],
+                          this.Data[1 * 4 + 1], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                          this.Data[3 * 4 + 1], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[1 * 4 + 2] =
+          -this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 2], this.Data[0 * 4 + 3],
+                          this.Data[1 * 4 + 0], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 2], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[2 * 4 + 2] =
+          +this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 1], this.Data[0 * 4 + 3],
+                          this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 3],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 3]) / det;
+        InvA.Data[3 * 4 + 2] =
+          -this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 1], this.Data[0 * 4 + 2],
+                          this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 2],
+                          this.Data[3 * 4 + 0], this.Data[3 * 4 + 1], this.Data[3 * 4 + 2]) / det;
+ 
+        InvA.Data[0 * 4 + 3] =
+          -this.determ3x3(this.Data[0 * 4 + 1], this.Data[0 * 4 + 2], this.Data[0 * 4 + 3],
+                          this.Data[1 * 4 + 1], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                          this.Data[2 * 4 + 1], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3]) / det;
+        InvA.Data[1 * 4 + 3] =
+          +this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 2], this.Data[0 * 4 + 3],
+                          this.Data[1 * 4 + 0], this.Data[1 * 4 + 2], this.Data[1 * 4 + 3],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 2], this.Data[2 * 4 + 3]) / det;
+        InvA.Data[2 * 4 + 3] =
+          -this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 1], this.Data[0 * 4 + 3],
+                          this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 3],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 3]) / det;
+        InvA.Data[3 * 4 + 3] =
+          +this.determ3x3(this.Data[0 * 4 + 0], this.Data[0 * 4 + 1], this.Data[0 * 4 + 2],
+                          this.Data[1 * 4 + 0], this.Data[1 * 4 + 1], this.Data[1 * 4 + 2],
+                          this.Data[2 * 4 + 0], this.Data[2 * 4 + 1], this.Data[2 * 4 + 2]) / det;
+        return InvA;
     }
 
     static rotateVec(V, A){

@@ -1,5 +1,5 @@
 import {matr, vec3} from '../../../mth/math.js'
-import {shader} from "./shader.js"
+import {material} from './material.js';
 //import 'https://greggman.github.io/webgl-lint/webgl-lint.js';
 
 export class vertex{
@@ -18,14 +18,15 @@ export class primitive {
     this.VBuf = null;
     this.NBuf = null;
     this.IBuf = null;
-    this.trans = matr.rotateVec(new vec3(0, 0, 1), 60).mulMatr(matr.rotateVec(new vec3(0, 1, 0), 60));//matr.identity();
+    this.trans = matr.identity();
+    this.mtl = new material();
   }
 
-  createPrim(type, P, noofV, N, I, noofI) {
+  createPrim(type, P, T, N, I) {
     this.prType = type;
-    if (P != null && noofV != 0) { 
+    if (P != null && P.length != 0) { 
       /* Shader attributes data */
-      const positionLoc = gl.getAttribLocation(this.shd.shaderProgram, 'in_pos');
+      const positionLoc = gl.getAttribLocation(this.mtl.shd.shaderProgram, 'in_pos');
   
       this.VA = gl.createVertexArray();
       window.gl.bindVertexArray(this.VA);
@@ -43,11 +44,11 @@ export class primitive {
                              
       if (N != null) {
         /* Shader attributes data */
-        const normalLoc = window.gl.getAttribLocation(this.shd.shaderProgram, 'in_normal');
+        const normalLoc = window.gl.getAttribLocation(this.mtl.shd.shaderProgram, 'in_normal');
         /* Create normals buffer */
         if (normalLoc >= 0) {
           this.NBuf = window.gl.createBuffer();
-          window.gl.bindBuffer(window.gl.ARRAY_BUFFER, this .NBuf);
+          window.gl.bindBuffer(window.gl.ARRAY_BUFFER, this.NBuf);
           window.gl.bufferData(window.gl.ARRAY_BUFFER, N, window.gl.STATIC_DRAW);
           window.gl.enableVertexAttribArray(normalLoc);
           window.gl.vertexAttribPointer(normalLoc, 3,
@@ -56,33 +57,92 @@ export class primitive {
         }
         
       }
+      if (T != null) {
+        /* Shader attributes data */
+        const texcoordLoc = window.gl.getAttribLocation(this.mtl.shd.shaderProgram, 'in_texcoord');
+        /* Create normals buffer */
+        if (texcoordLoc >= 0) {
+          this.TBuf = window.gl.createBuffer();
+          window.gl.bindBuffer(window.gl.ARRAY_BUFFER, this.TBuf);
+          window.gl.bufferData(window.gl.ARRAY_BUFFER, T, window.gl.STATIC_DRAW);
+          window.gl.enableVertexAttribArray(texcoordLoc);
+          window.gl.vertexAttribPointer(texcoordLoc, 2,
+            window.gl.FLOAT, false,
+            0, 0);
+        }
+        
+      }
       gl.bindVertexArray(null);
     }   
-    if (I != null && noofI != 0) {
+    if (I != null && I.length != 0) {
       this.IBuf = window.gl.createBuffer();
       window.gl.bindBuffer(window.gl.ELEMENT_ARRAY_BUFFER, this.IBuf);
       window.gl.bufferData(window.gl.ELEMENT_ARRAY_BUFFER, I, window.gl.STATIC_DRAW);
-      this.numOfEl = noofI;
+      this.numOfEl = I.length;
     }
     else
-      this.numOfEl = noofV;
+      this.numOfEl = V == null ? 0 : V.length;
   }
 
-  async create(type, P, noofV, N, I, noofI, shdName) {
+  async create(type, P, T, N, I, shdName) {
+      let tmp = await this.mtl.create(shdName);
+      this.createPrim(type, P, T, N, I);
+      return tmp;
+  }
+
+  createPrimFromBuffer(type, PAttr, NAttr, IAttr, Count, Buf) {
+    this.prType = type;
+    if (Buf != null && PAttr.byteLength > 0 && NAttr.byteLength > 0) { 
+      /* Shader attributes data */
+      const positionLoc = gl.getAttribLocation(this.shd.shaderProgram, 'in_pos');
+      const normalLoc = gl.getAttribLocation(this.shd.shaderProgram, 'in_normal');
+
+      if (positionLoc < 0 || normalLoc < 0)
+        return; // !!!
+      
+      this.VA = gl.createVertexArray();
+      window.gl.bindVertexArray(this.VA);
+      
+      this.VBuf = gl.createBuffer();
+      window.gl.bindBuffer(window.gl.ARRAY_BUFFER, this.VBuf);
+      let length = Count * 2;// * Float32Array.BYTES_PER_ELEMENT;//2 * 3 * Math.floor(PAttr.byteLength / Float32Array.BYTES_PER_ELEMENT);
+      window.gl.bufferData(window.gl.ARRAY_BUFFER, new Float32Array(Buf, PAttr.byteOffset, length), window.gl.STATIC_DRAW);
+      //window.gl.bufferData(window.gl.ARRAY_BUFFER, new Float32Array(Buf), window.gl.STATIC_DRAW);
+      
+      window.gl.enableVertexAttribArray(normalLoc);
+      window.gl.vertexAttribPointer(normalLoc, 3,
+        window.gl.FLOAT, false,
+        NAttr.byteStride, 0);//NAttr.byteOffset + Math.floor(NAttr.byteStride / 2.0));
+
+      window.gl.enableVertexAttribArray(positionLoc); 
+      window.gl.vertexAttribPointer(positionLoc, 3,
+        gl.FLOAT, false,
+        PAttr.byteStride, Math.floor(NAttr.byteStride));
+      
+      gl.bindVertexArray(null);
+    }
+    if (Buf != null && IAttr.byteLength != 0) {
+      this.IBuf = window.gl.createBuffer();
+      window.gl.bindBuffer(window.gl.ELEMENT_ARRAY_BUFFER, this.IBuf);
+      let Ind = new Uint32Array(Buf, IAttr.byteOffset, Math.floor(IAttr.byteLength / Uint32Array.BYTES_PER_ELEMENT));
+      window.gl.bufferData(window.gl.ELEMENT_ARRAY_BUFFER, Ind, window.gl.STATIC_DRAW);
+      this.numOfEl = Ind.length;
+    }
+    else
+      this.numOfEl = Math.floor(PAttr.byteLength / Float32Array.BYTES_PER_ELEMENT / 3.0);
+  }
+
+  async createFromBuffer(type, PAttr, NAttr, IAttr, Count, Buf, shdName) {
     this.shd = new shader();
     this.shd.create(shdName).then(()=> {
       this.matrWVPUniform = window.gl.getUniformLocation(this.shd.shaderProgram, "MatrWVP");
-      this.createPrim(type, P, noofV, N, I, noofI);
+      this.createPrimFromBuffer(type, PAttr, NAttr, IAttr, Count, Buf);
     });
   }
 
-  draw() {
-    window.gl.useProgram(this.shd.shaderProgram);
-    
-    /* Update matricies */
-    if (this.matrWVPUniform != undefined)
-      window.gl.uniformMatrix4fv(this.matrWVPUniform, false, new Float32Array(this.trans.mulMatr(window.VP).Data)); 
-
+  draw() {    
+    this.mtl.apply();
+    this.mtl.uniSet("MatrWVP", this.trans.mulMatr(window.VP));
     /* Making an array of vertices active */
     window.gl.bindVertexArray(this.VA);
 
@@ -99,19 +159,4 @@ export class primitive {
     /* Disable vertex array */
     window.gl.bindVertexArray(null);
   }
-
-  /*
-  Free(gl) {
-    if (VA != null) {
-      window.gl.bindVertexArray(this.VA);
-      window.gl.bindBuffer(gl.ARRAY_BUFFER, 0);
-      window.gl.deleteBuffer(this.VBuf);
-      window.gl.bindVertexArray(null);
-      window.gl.deleteVertexArray(this.VA);
-    }
-    if (this.IBuf != null)
-      window.gl.deleteBuffers(this.IBuf);
-    this.VA = this.IBuf = null;
-  }
-  */
 }

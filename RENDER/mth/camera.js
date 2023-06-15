@@ -13,7 +13,7 @@ export class camera {
      } */
 
     constructor() {
-        this.Loc = new vec3(0, 0, 10);
+        this.Loc = new vec3(0, 0, 12);
         this.Dir = new vec3(0, 0, -1);
         this.Right = new vec3(1, 0, 0);
         this.Up = this.Right.cross(this.Dir).normalize();
@@ -29,6 +29,8 @@ export class camera {
         this.UpdateProj();
         this.UpdateView();
         window.VP = this.VP = this.View.mulMatr(this.Proj);
+        window.View = this.View;
+        window.Proj = this.Proj;  
     }
 
 
@@ -62,6 +64,8 @@ export class camera {
 
       this.UpdateView();
       window.VP = this.VP = this.View.mulMatr(this.Proj);
+      window.View = this.View;
+      window.Proj = this.Proj;
     }
 
     /*
