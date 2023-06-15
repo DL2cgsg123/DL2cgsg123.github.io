@@ -45,8 +45,8 @@ export class model {
     }
 
     async loadGLTF(name, shdName) {
-      let data = await this.loadJSON("../../bin/models/" + name + "/" + name + ".gltf");
-      let bin = await this.loadBIN("../../bin/models/" + name + "/" + name + ".bin");
+      let data = await this.loadJSON("./bin/models/" + name + "/" + name + ".gltf");
+      let bin = await this.loadBIN("./bin/models/" + name + "/" + name + ".bin");
       /* Check number of the model scenes */
       if (data.scenes.length > 1) {
         console.log("Problem: too much scenes!");
