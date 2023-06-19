@@ -115,10 +115,10 @@ export class render{
         Prom.then(() => {
           this.Pr.prims[1].mtl.textures.push(tex);
           this.Pr.prims[1].mtl.textures.push(this.skyBox);
-          this.Pr.prims[1].trans = matr.scale(new vec3(3.0, 3.0, 3.0)).mulMatr(matr.rotateVec(new vec3(0.0, 0.0, 1.0), 30.0)).mulMatr(matr.translate(new vec3(-4.0, 0.0, -10.0)));
+          this.Pr.prims[1].trans = matr.scale(new vec3(3.0, 3.0, 3.0)).mulMatr(matr.rotateVec(new vec3(0.0, 0.0, 1.0), 30.0)).mulMatr(matr.translate(new vec3(-4.0, 0.0, -20.0)));
           this.Pr.prims[0].mtl.textures.push(tex);
           this.Pr.prims[0].mtl.textures.push(this.skyBox);
-          this.Pr.prims[0].trans = matr.scale(new vec3(2.0, 2.0, 2.0)).mulMatr(matr.translate(new vec3(2.0, 1.0, -2.0)));
+          this.Pr.prims[0].trans = matr.scale(new vec3(2.0, 2.0, 2.0)).mulMatr(matr.translate(new vec3(2.0, 1.0, -12.0)));
           //this.cam.SetLocAtUp(new vec3(-20.12, -3.32, -22.49), new vec3(-18.71, -2.97, -21.11), new vec3(0.0, 1.0, 0.0));
           this.drawScene();
           this.tick();
